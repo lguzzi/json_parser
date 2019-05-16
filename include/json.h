@@ -15,7 +15,6 @@ namespace json_options{
 class json{
     public:
         json();
-        json(const char* main_label);
        ~json(); 
         
         std::list<std::string>& keys();
@@ -32,6 +31,8 @@ class json{
         friend std::ostream&    operator<<(std::ostream& stream, json& node) ;
     
     private:
+        json(const char* main_label);
+
         std::vector<json*>  _subnodes   ;
         std::list<std::string>  _keys       ;
         std::string             _content    ;
