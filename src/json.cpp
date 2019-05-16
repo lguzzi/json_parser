@@ -14,8 +14,8 @@ namespace json_options{
 }
 
 json::json(){
-    _last   = true ;
     _depth  = 0    ;
+    _last   = true ;
 }
 json::json(const char* main_label){
     _label = main_label ;
@@ -58,9 +58,14 @@ void json::operator=(const bool   content){
 
 void json::_add_child(json* child){
     _type = "jsn" ;
-    if (_subnodes.size()) _subnodes.back()->_last = false ;
+
+    if (_subnodes.size()){
+        _subnodes.back()->_last = false ;
+    }
+
     _subnodes.push_back(child)  ;
     _keys.push_back(std::string(child->_label)) ;
+    
     child->_depth = _depth + 1 ;
 }
 
