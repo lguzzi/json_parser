@@ -75,7 +75,7 @@ std::ostream& operator<<(std::ostream& stream, json& node){
     if (node._depth != 0){
         if      (node._type == "jsn"){  stream  << std::string(node._depth * json_options::INDENTATION, ' ')
                                                 << "\"" << node._label      << "\": " 
-                                                << "{"  << std::endl;
+                                                << "{"  << std::endl ;
         }
         else if (node._type == "str"){  stream  << std::string(node._depth * json_options::INDENTATION, ' ')
                                                 << "\"" << node._label      << "\": " 
@@ -83,20 +83,20 @@ std::ostream& operator<<(std::ostream& stream, json& node){
         }
         else if (node._type == "flt"){  stream  << std::string(node._depth * json_options::INDENTATION, ' ')
                                                 << "\"" << node._label      << "\": " 
-                                                << std::stof(node._content);
+                                                << std::stof(node._content) ;
         }
         else if (node._type == "int"){  stream  << std::string(node._depth * json_options::INDENTATION, ' ')
                                                 << "\"" << node._label      << "\": " 
-                                                << std::stoi(node._content);     
+                                                << std::stoi(node._content) ;     
         }
         else if (node._type == "boo"){  stream  << std::string(node._depth * json_options::INDENTATION, ' ')
-                                                << "\"" << node._label      << "\": ";
-                                                if (std::stoi(node._content))   stream << "true" ;
-                                                else                            stream << "false";
+                                                << "\"" << node._label      << "\": " ; 
+                                                if (std::stoi(node._content))   stream << "true"  ;
+                                                else                            stream << "false" ;
         }
         else if (node._type == "vec"){  stream  << std::string(node._depth * json_options::INDENTATION, ' ')
                                                 << "\"" << node._label      << "\": "
-                                                << "TBA";
+                                                << "TBA" ;
         }
     } else{
         stream << "{" << std::endl;
@@ -109,5 +109,5 @@ std::ostream& operator<<(std::ostream& stream, json& node){
                                         << "}" ;
     if (! node._last)           stream  << "," ;
 
-    return stream << std::endl;
+    return stream << std::endl ;
 }

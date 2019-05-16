@@ -21,12 +21,12 @@ class json{
 
         void _add_child (json* child);
 
-        json&               operator[](const char*  node_name) ;
-        void                    operator= (const char*  content  ) ;
-        void                    operator= (const float  content  ) ;
-        void                    operator= (const double content  ) ;
-        void                    operator= (const bool  content   ) ;
-        void                    operator= (const int    content  ) ;
+        json&   operator[](const char*  node_name) ;
+        void    operator= (const char*  content  ) ;
+        void    operator= (const float  content  ) ;
+        void    operator= (const double content  ) ;
+        void    operator= (const bool   content  ) ;
+        void    operator= (const int    content  ) ;
 
         friend std::ostream&    operator<<(std::ostream& stream, json& node) ;
     
