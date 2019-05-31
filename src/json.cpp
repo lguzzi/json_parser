@@ -10,7 +10,9 @@
 #include <typeinfo>
 #include <sstream>
 #include <array>
-
+namespace jopt{
+    int PREC = 4;
+}
 json::json(){
     _depth  = 0    ;
     _last   = true ;
@@ -34,27 +36,6 @@ json& json::operator[] (const char* label){
     _add_child(new json(label)) ;
     return *(_subnodes.back()) ;
 }
-
-//void json::operator=(const char*  content){ 
-//    _content.str("") ;
-//    _content << "\"" << content << "\"" ; 
-//}
-//void json::operator=(const float  content){ 
-//    _content.str("") ;
-//    _content << content ; 
-//}
-//void json::operator=(const double  content){ 
-//    _content.str("") ;
-//    _content << content ; 
-//}
-//void json::operator=(const int    content){ 
-//    _content.str("") ;
-//    _content << content ; 
-//}
-//void json::operator=(const bool   content){ 
-//    _content.str("") ;
-//    _content << std::boolalpha << content ;
-//}
 
 void json::_add_child(json* child){
     _content.str("") ;

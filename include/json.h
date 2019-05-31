@@ -9,31 +9,39 @@
 #include <typeinfo>
 #include <sstream>
 #include <array>
+#include <iomanip>
+//TODO
+// set automatic precision
+
+namespace jopt{
+    extern int PREC ;
+}
 
 namespace jout{
+    /*
+    input-output namespace for safe operator overloading */
     template<typename S>
-    S& operator<<(S& stream, const char* value){
+    S& operator<(S& stream, const char* value){
         stream << '"' << value << '"' ;
         return stream ;
     }
-
     template<typename S>
-    S& operator<<(S& stream, std::string& value){
+    S& operator<(S& stream, std::string& value){
         stream << '"' << value << '"' ;
         return stream ;
     }
     template<typename S, typename O>
-    S& operator<<(S& stream, O value){
-        stream << value ;
+    S& operator<(S& stream, O& value){
+        stream  << std::setprecision(jopt::PREC) 
+                << value ;
         return stream ;
     }
-
     template<typename S, typename T, size_t N>
-    S& operator<<(S& stream, std::array<T, N>& array){
+    S& operator<(S& stream, std::array<T, N>& array){
         stream << '[' ;
         for (int i = 0; i < array.size(); i++){
-        stream  << array[i] 
-                << std::string(i != array.size() - 1, ',') 
+        stream  < array[i] ;
+        stream  << std::string(i != array.size() - 1, ',') 
                 << std::string(i != array.size() - 1, ' ') ;
         }
         stream << ']' ;
@@ -53,13 +61,9 @@ class json{
         template <typename T>
         void    operator= (T content){
             _content.str("") ;
-            jout::operator<< (_content, std::boolalpha) ;
-            jout::operator<< (_content, content) ;
+            _content << std::boolalpha ;
+            jout::operator< (_content, content) ;
         }
-        //void    operator= (const float  content  ) ;
-        //void    operator= (const double content  ) ;
-        //void    operator= (const bool   content  ) ;
-        //void    operator= (const int    content  ) ;
 
         friend std::ostream& operator<<(std::ostream& stream, json& node) ;
     
