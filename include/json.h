@@ -7,9 +7,38 @@
 #include <iostream>
 #include <list>
 #include <typeinfo>
+#include <sstream>
+#include <array>
 
-namespace json_options{
-    extern int  INDENTATION ;
+namespace jout{
+    template<typename S>
+    S& operator<<(S& stream, const char* value){
+        stream << '"' << value << '"' ;
+        return stream ;
+    }
+
+    template<typename S>
+    S& operator<<(S& stream, std::string& value){
+        stream << '"' << value << '"' ;
+        return stream ;
+    }
+    template<typename S, typename O>
+    S& operator<<(S& stream, O value){
+        stream << value ;
+        return stream ;
+    }
+
+    template<typename S, typename T, size_t N>
+    S& operator<<(S& stream, std::array<T, N>& array){
+        stream << '[' ;
+        for (int i = 0; i < array.size(); i++){
+        stream  << array[i] 
+                << std::string(i != array.size() - 1, ',') 
+                << std::string(i != array.size() - 1, ' ') ;
+        }
+        stream << ']' ;
+        return stream ;
+    }
 }
 
 class json{
@@ -19,30 +48,40 @@ class json{
         
         std::list<std::string>& keys();
 
-        void _add_child (json* child);
 
         json&   operator[](const char*  node_name) ;
-        void    operator= (const char*  content  ) ;
-        void    operator= (const float  content  ) ;
-        void    operator= (const double content  ) ;
-        void    operator= (const bool   content  ) ;
-        void    operator= (const int    content  ) ;
+        template <typename T>
+        void    operator= (T content){
+            _content.str("") ;
+            jout::operator<< (_content, std::boolalpha) ;
+            jout::operator<< (_content, content) ;
+        }
+        //void    operator= (const float  content  ) ;
+        //void    operator= (const double content  ) ;
+        //void    operator= (const bool   content  ) ;
+        //void    operator= (const int    content  ) ;
 
-        friend std::ostream&    operator<<(std::ostream& stream, json& node) ;
+        friend std::ostream& operator<<(std::ostream& stream, json& node) ;
     
     private:
         json(const char* main_label);
 
-        std::vector<json*>  _subnodes   ;
+        void _add_child (json* child);
+        bool _is_last()  ;
+        bool _is_first() ;
+        std::string _labely(std::string& label) ;
+
+        std::vector<json*>      _subnodes   ;
         std::list<std::string>  _keys       ;
-        std::string             _content    ;
+        std::stringstream       _content    ;
         std::string             _label      ;
-        std::string             _type       ;
+
+        json*   _mother ;
 
         bool    _last   ;
         int     _depth  ;
 };
 
-std::ostream& operator<<(std::ostream& os, json& node) ;
+std::ostream& operator<<(std::ostream& stream, json& node) ;
 
 #endif
