@@ -10,11 +10,9 @@
 #include <sstream>
 #include <array>
 #include <iomanip>
-//TODO
-// set automatic precision
 
 namespace jopt{
-    extern int PREC ;
+    extern int PRECISION ;
 }
 
 namespace jout{
@@ -32,7 +30,7 @@ namespace jout{
     }
     template<typename S, typename O>
     S& operator<(S& stream, O& value){
-        stream  << std::setprecision(jopt::PREC) 
+        stream  << std::setprecision(jopt::PRECISION) 
                 << value ;
         return stream ;
     }
