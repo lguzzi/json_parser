@@ -53,8 +53,10 @@ class json{
        ~json(); 
         
         std::list<std::string>& keys();
-
-
+        std::string             Str() ;
+        int                     Int() ;
+        float                   Flt() ;
+        double                  Dou() ;
         json&   operator[](const char*  node_name) ;
         template <typename T>
         void    operator= (T content){
@@ -64,6 +66,8 @@ class json{
         }
 
         friend std::ostream& operator<<(std::ostream& stream, json& node) ;
+        //friend std::ostream& operator>>(std::ostream& stream, json& node) ;
+
     
     private:
         json(const char* main_label);
@@ -85,5 +89,6 @@ class json{
 };
 
 std::ostream& operator<<(std::ostream& stream, json& node) ;
+//std:ostream& operator>>(std::ostream& stream, json& node) ;
 
 #endif

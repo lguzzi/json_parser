@@ -11,7 +11,7 @@
 #include <sstream>
 #include <array>
 namespace jopt{
-    int PREC = 4;
+    int PRECISION = 4;
 }
 json::json(){
     _depth  = 0    ;
@@ -76,9 +76,22 @@ std::string labely(std::string& label){
     }
 }
 
+std::string json::Str(){
+    return _content.str() ;
+}
+int json::Int(){
+    return std::stoi(_content.str()) ;
+}
+float json::Flt(){
+    return std::stof(_content.str()) ;
+}
+double json::Dou(){
+    return std::stod(_content.str()) ;
+}
+
 std::ostream& operator<<(std::ostream& stream, json& node){
     /*
-    json formatter method */
+    json formatter output method */
     // print the overture char, be it a '{' (first child) or a ',' (not-first child)
     stream  << std::string(  node._is_first()                       , '{') 
             << std::string(! node._is_first() && bool(node._mother) , ',') 
@@ -101,3 +114,56 @@ std::ostream& operator<<(std::ostream& stream, json& node){
 
     return stream ;
 }
+/*
+bool operator>>(std::istream& stream, json& node){
+    
+   // json formatter input method 
+    bool open_quote = 0 ;
+    bool open_curly = 0 ;
+
+    //TODO
+    //strip \n, \t, ' ' chars
+    
+    if (stream.get() != '{'){
+        stream.str("ERROR: input file is not a json file") ;
+        return false ;
+    } else  open_curly += 1 ;
+    if (stream.get() != '"'){
+        stream.str("ERROR: input file is not a json file") ;
+        return false ;
+    } else  open_quote += 1 ;
+
+    std::string         key  = "" ;
+    std::stringstream   val  = "" ;
+    std::stringstream   jsn  = "" ;
+    while (char input = stream.get() != '"'){
+        key += input ;
+    }       open_quote -= 1 ;
+
+    if (stream.get() == ':'){
+        if (stream.get() != '"'){
+            val << input ;
+            while (char input = stream.get() != ','){
+                val << input ;
+            }
+        } else {
+            while (char input = stream.get() != '"'){
+                val << input ;
+            }
+        }
+    } else if (stream.get() == '{'){
+        while (open_curly != 0){
+            char input = stream.get()  ;
+            if (input == '{') open_curly += 1 ;
+            if (input == '}') open_curly -= 1 ;
+            jsn << input ;
+        }
+        jsn >> node ;
+    } else {
+        stream.str("ERROR: input file is not a json file") ;
+        return false ;
+    }
+
+    return true ;
+}
+*/
