@@ -10,6 +10,8 @@
 #include <typeinfo>
 #include <sstream>
 #include <array>
+#include <algorithm>
+
 namespace jopt{
     int PRECISION = 4;
 }
@@ -76,16 +78,16 @@ std::string labely(std::string& label){
     }
 }
 
-std::string json::Str(){
+std::string json::String(){
     return _content.str() ;
 }
 int json::Int(){
     return std::stoi(_content.str()) ;
 }
-float json::Flt(){
+float json::Float(){
     return std::stof(_content.str()) ;
 }
-double json::Dou(){
+double json::Double(){
     return std::stod(_content.str()) ;
 }
 
@@ -114,56 +116,101 @@ std::ostream& operator<<(std::ostream& stream, json& node){
 
     return stream ;
 }
-/*
+
 bool operator>>(std::istream& stream, json& node){
-    
    // json formatter input method 
     bool open_quote = 0 ;
-    bool open_curly = 0 ;
-
-    //TODO
-    //strip \n, \t, ' ' chars
-    
-    if (stream.get() != '{'){
-        stream.str("ERROR: input file is not a json file") ;
-        return false ;
-    } else  open_curly += 1 ;
-    if (stream.get() != '"'){
-        stream.str("ERROR: input file is not a json file") ;
-        return false ;
-    } else  open_quote += 1 ;
-
-    std::string         key  = "" ;
-    std::stringstream   val  = "" ;
-    std::stringstream   jsn  = "" ;
-    while (char input = stream.get() != '"'){
-        key += input ;
-    }       open_quote -= 1 ;
-
-    if (stream.get() == ':'){
-        if (stream.get() != '"'){
-            val << input ;
-            while (char input = stream.get() != ','){
-                val << input ;
-            }
-        } else {
-            while (char input = stream.get() != '"'){
-                val << input ;
-            }
-        }
-    } else if (stream.get() == '{'){
-        while (open_curly != 0){
-            char input = stream.get()  ;
-            if (input == '{') open_curly += 1 ;
-            if (input == '}') open_curly -= 1 ;
-            jsn << input ;
-        }
-        jsn >> node ;
-    } else {
-        stream.str("ERROR: input file is not a json file") ;
+    int open_curly = 0 ;
+    char input ;
+    if (jin::getChar(stream, input, true) != '{'){
+        std::cout << "ERROR: input file is not a json file" << std::endl ;
+        std::cout << "\tfile " << __FILE__ << " @ line " << __LINE__ << std::endl;
+        std::cout << "\tlast char is " << input << std::endl;
         return false ;
     }
 
+start_parsing_key:
+    if (jin::getChar(stream, input, true) == stream.eof()){
+        return true ;
+    } else {
+        stream.unget() ;
+    }
+
+    std::string         key ;
+    std::string         val ;
+    std::stringstream   jsn ;
+
+    if (! _getKey(stream, key))                     throw std::logic_error("[0] invalid json format") ;
+    if (jin::getChar(stream, input, true) != ':')   throw std::logic_error("[1] invalid json format") ;
+    if (jin::getChar(stream, input, true) == '{'){
+        open_curly += 1 ;
+        if (! _dumpJsn(stream, jsn))                throw std::logic_error("[2] invalid json format") ;
+        jsn >> node[(const char*) key.c_str()] ;
+    } else{
+        stream.unget() ;
+        if (! _getCont(stream, val))                throw std::logic_error("[3] invalid json format") ;
+        node[ (const char*) key.c_str()] = val ;
+    }
+
+    if (jin::getChar(stream, input, true) == ','){
+        goto start_parsing_key ;
+    } else {
+        stream.unget() ;
+    }
+
+    while (jin::getChar(stream, input, true) == '}'){
+        open_curly -= 1 ;
+    }
+    
+//    if (open_curly)                                 throw std::logic_error("[4] invalid json format") ;
     return true ;
 }
-*/
+
+// TODO: add eof check
+bool _getKey(std::istream& stream, std::string& key){
+    char input ;
+    if   (jin::getChar(stream, input) != '"') return false ;
+    while(jin::getChar(stream, input) != '"') key += input ;
+    return true ;
+}
+bool _getCont(std::istream& stream, std::string& cont){
+    char input ;
+    jin::getChar(stream, input) ;
+    if      (input == '"')  return _getStr(stream, cont) ;
+    else if (input == '[')  return _getVec(stream, cont) ;
+    else                    return _getNum(stream, cont) ;
+
+    return false ;
+}
+bool _getNum(std::istream& stream, std::string& num){
+    stream.unget() ;
+    char input ;
+    while(jin::getChar(stream, input) != ',' and input != '}') num += input ;
+    stream.unget() ;
+    return true ;
+}
+bool _getStr(std::istream& stream, std::string& str){
+    char input ;
+    while(jin::getChar(stream, input) != '"') str += input ;
+    return true ;
+}
+bool _getVec(std::istream& stream, std::string& vec){
+    char input ;
+    vec += '[' ;
+    while(jin::getChar(stream, input) != ']') vec += input ;
+    vec += ']' ;
+    return true ;
+}
+bool _dumpJsn(std::istream& stream, std::stringstream& jsn){
+    char input ;
+    int  open_curly = 1 ;
+    
+    jsn << '{' ;
+    while (open_curly){
+        jin::getChar(stream, input) ;
+        if (input == '{') open_curly += 1 ;
+        if (input == '}') open_curly -= 1 ;
+        jsn << input ;
+    }
+    return true ;
+}

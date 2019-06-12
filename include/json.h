@@ -47,16 +47,28 @@ namespace jout{
     }
 }
 
+namespace jin{
+    template <typename S>
+    char& getChar(S& stream, char& input, bool skip_spaces = false){
+        input = stream.get() ;
+        while ( input == '\n' || input == '\t' || (!skip_spaces && input == ' ')){
+            input = stream.get() ;
+        }
+    
+        return input ;
+    }
+}
+
 class json{
     public:
         json();
        ~json(); 
         
         std::list<std::string>& keys();
-        std::string             Str() ;
-        int                     Int() ;
-        float                   Flt() ;
-        double                  Dou() ;
+        std::string             String() ;
+        int                     Int()    ;
+        float                   Float()  ;
+        double                  Double() ;
         json&   operator[](const char*  node_name) ;
         template <typename T>
         void    operator= (T content){
@@ -66,7 +78,7 @@ class json{
         }
 
         friend std::ostream& operator<<(std::ostream& stream, json& node) ;
-        //friend std::ostream& operator>>(std::ostream& stream, json& node) ;
+        friend bool          operator>>(std::istream& stream, json& node) ;
 
     
     private:
@@ -89,6 +101,14 @@ class json{
 };
 
 std::ostream& operator<<(std::ostream& stream, json& node) ;
-//std:ostream& operator>>(std::ostream& stream, json& node) ;
+bool          operator>>(std::istream& stream, json& node) ;
+
+bool _getKey (std::istream& stream, std::string& key)  ;
+bool _getNum (std::istream& stream, std::string& num)  ;
+bool _getStr (std::istream& stream, std::string& str)  ;
+bool _getVec (std::istream& stream, std::string& vec)  ;
+bool _getCont(std::istream& stream, std::string& cont) ;
+bool _dumpJsn(std::istream& stream, std::stringstream& jsn) ;
+
 
 #endif
