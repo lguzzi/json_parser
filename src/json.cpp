@@ -12,6 +12,7 @@
 #include <array>
 #include <algorithm>
 
+
 namespace jopt{
     int PRECISION = 4;
 }
@@ -119,15 +120,10 @@ std::ostream& operator<<(std::ostream& stream, json& node){
 
 bool operator>>(std::istream& stream, json& node){
    // json formatter input method 
-    bool open_quote = 0 ;
-    int open_curly = 0 ;
     char input ;
-    if (jin::getChar(stream, input, true) != '{'){
-        std::cout << "ERROR: input file is not a json file" << std::endl ;
-        std::cout << "\tfile " << __FILE__ << " @ line " << __LINE__ << std::endl;
-        std::cout << "\tlast char is " << input << std::endl;
-        return false ;
-    }
+    
+    //check validity of json format
+    if (jin::getChar(stream, input, true) != '{')   throw std::logic_error("[0] invalid json format") ;
 
 start_parsing_key:
     if (jin::getChar(stream, input, true) == stream.eof()){
@@ -139,30 +135,82 @@ start_parsing_key:
     std::string         key ;
     std::string         val ;
     std::stringstream   jsn ;
+    bool                is_vec = false ;
+    bool                is_str = false ;
+    bool                is_flt = false ;
 
-    if (! _getKey(stream, key))                     throw std::logic_error("[0] invalid json format") ;
-    if (jin::getChar(stream, input, true) != ':')   throw std::logic_error("[1] invalid json format") ;
+    //get the key and the content and save them inside a string
+    if (! _getKey(stream, key))                                 throw std::logic_error("[1] invalid json format") ;
+    if (jin::getChar(stream, input, true) != ':')               throw std::logic_error("[2] invalid json format") ;
+    // if the value is a json node
     if (jin::getChar(stream, input, true) == '{'){
-        open_curly += 1 ;
-        if (! _dumpJsn(stream, jsn))                throw std::logic_error("[2] invalid json format") ;
+        if (! _dumpJsn(stream, jsn))                            throw std::logic_error("[3] invalid json format") ;
+        // recursivelly dump the json node read from the file into the json object
         jsn >> node[(const char*) key.c_str()] ;
     } else{
         stream.unget() ;
-        if (! _getCont(stream, val))                throw std::logic_error("[3] invalid json format") ;
-        node[ (const char*) key.c_str()] = val ;
+        // if it's not a subnode, it's a value (string, bool, number or vector)
+        if (! _getCont(stream, val, is_str, is_vec, is_flt))    throw std::logic_error("[4] invalid json format") ;
+        // guess the type of the value 
+        if      (val == "true"  and ! is_str)   node[ (const char*) key.c_str()] = true  ;
+        else if (val == "false" and ! is_str)   node[ (const char*) key.c_str()] = false ;
+        else if (is_str)                        node[ (const char*) key.c_str()] = val   ;
+        else if (is_vec){
+            std::vector<int>    vint ;
+            std::vector<double> vdbl ;
+           
+            std::vector<bool>   vboo ;
+            if (val[0] != '[')              throw std::logic_error("[5] invalid json format") ;
+            if (val[val.size() - 1] != ']') throw std::logic_error("[6] invalid json format") ;
+
+            std::string                 entry   ;
+            std::vector<std::string>    entries ;
+            for (std::string::iterator it = val.begin(); it != val.end(); ++it){
+                if (*it == '[') continue ;
+                if (*it == ',' || *it == ']'){
+                    entries.push_back(entry) ;
+                    entry = std::string("")  ;
+                    if (*(it + 1) == ' ') ++it ;
+                } else{
+                    entry += *it ;
+                }
+            }
+            if (entries[0].find('"') != std::string::npos ){
+                std::vector<char*>  vec ;
+                for (std::vector<std::string>::iterator it = entries.begin(); it != entries.end(); ++it){
+                    vec.push_back((char*) it->c_str()) ;
+                }
+                node[ (const char*) key.c_str()] = vec ;
+            } else if (entries[0].find('.') != std::string::npos ){
+                std::vector<double>  vec ;
+                for (std::vector<std::string>::iterator it = entries.begin(); it != entries.end(); ++it){
+                    vec.push_back( std::stod(*it)) ;
+                }
+                node[ (const char*) key.c_str()] = vec ;
+            } else if (entries[0] == "true" || entries[0] == "false"){
+                std::vector<bool>  vec ;
+                for (std::vector<std::string>::iterator it = entries.begin(); it != entries.end(); ++it){
+                    if      ((*it) == "true" ) vec.push_back(true ) ;
+                    else if ((*it) == "false") vec.push_back(false) ;
+                    else throw std::logic_error("[0] invalid boolean stream") ;
+                }
+                node[ (const char*) key.c_str()] = vec ;
+            } else{
+                std::vector<int>  vec ;
+                for (std::vector<std::string>::iterator it = entries.begin(); it != entries.end(); ++it){
+                    vec.push_back( std::stoi(*it)) ;
+                }
+                node[ (const char*) key.c_str()] = vec ;
+            }
+        }
+        else if (is_flt)                        node[ (const char*) key.c_str()] = std::stod(val) ;
+        else                                    node[ (const char*) key.c_str()] = std::stoi(val) ;
     }
 
-    if (jin::getChar(stream, input, true) == ','){
-        goto start_parsing_key ;
-    } else {
-        stream.unget() ;
-    }
+    // if a comma is found, another key follows
+    if (jin::getChar(stream, input, true) == ',')   goto start_parsing_key ;
+    else if (input != '}')                          throw std::logic_error("[5] invalid json format") ;
 
-    while (jin::getChar(stream, input, true) == '}'){
-        open_curly -= 1 ;
-    }
-    
-//    if (open_curly)                                 throw std::logic_error("[4] invalid json format") ;
     return true ;
 }
 
@@ -173,19 +221,28 @@ bool _getKey(std::istream& stream, std::string& key){
     while(jin::getChar(stream, input) != '"') key += input ;
     return true ;
 }
-bool _getCont(std::istream& stream, std::string& cont){
+bool _getCont(std::istream& stream, std::string& cont, bool& is_str, bool& is_vec, bool& is_flt){
     char input ;
     jin::getChar(stream, input) ;
-    if      (input == '"')  return _getStr(stream, cont) ;
-    else if (input == '[')  return _getVec(stream, cont) ;
-    else                    return _getNum(stream, cont) ;
+    if (input == '"') {
+        is_str = true ;
+        return _getStr(stream, cont) ;
+    } else if (input == '[') {
+        is_vec = true ;
+        return _getVec(stream, cont) ;
+    } else {
+        return _getNum(stream, cont, is_flt) ;
+    }
 
     return false ;
 }
-bool _getNum(std::istream& stream, std::string& num){
+bool _getNum(std::istream& stream, std::string& num, bool& is_flt){
     stream.unget() ;
     char input ;
-    while(jin::getChar(stream, input) != ',' and input != '}') num += input ;
+    while(jin::getChar(stream, input) != ',' and input != '}') {
+        num += input ;
+        if (input == '.') is_flt = true ;
+    }
     stream.unget() ;
     return true ;
 }

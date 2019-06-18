@@ -17,7 +17,7 @@ namespace jopt{
 
 namespace jout{
     /*
-    input-output namespace for safe operator overloading */
+    namespace for safe operator overloading */
     template<typename S>
     S& operator<(S& stream, const char* value){
         stream << '"' << value << '"' ;
@@ -44,7 +44,36 @@ namespace jout{
         }
         stream << ']' ;
         return stream ;
-    }
+    }    
+    template<typename S, typename T>
+    S& operator<(S& stream, std::vector<T>& array){
+        stream << '[' ;
+        for (int i = 0; i < array.size(); i++){
+        stream  < array[i] ;
+        stream  << std::string(i != array.size() - 1, ',') 
+                << std::string(i != array.size() - 1, ' ') ;
+        }
+        stream << ']' ;
+        return stream ;
+    }  
+    // must unreference the bool reference (see std::vector<bool> discussions)
+    // https://en.cppreference.com/w/cpp/container/vector_bool
+    template<typename S>
+    S& operator<(S& stream, std::vector<bool>& array){
+        stream << '[' ;
+        // l-type only for the reference
+        bool fingolfin = true  ;
+        bool finfarin  = false ;
+
+        for (int i = 0; i < array.size(); i++){
+        if (array[i] == true)   stream  < fingolfin  ;
+        else                    stream  < finfarin   ;
+        stream  << std::string(i != array.size() - 1, ',') 
+                << std::string(i != array.size() - 1, ' ') ;
+        }
+        stream << ']' ;
+        return stream ;
+    }  
 }
 
 namespace jin{
@@ -104,11 +133,10 @@ std::ostream& operator<<(std::ostream& stream, json& node) ;
 bool          operator>>(std::istream& stream, json& node) ;
 
 bool _getKey (std::istream& stream, std::string& key)  ;
-bool _getNum (std::istream& stream, std::string& num)  ;
+bool _getNum (std::istream& stream, std::string& num, bool& is_flt)  ;
 bool _getStr (std::istream& stream, std::string& str)  ;
 bool _getVec (std::istream& stream, std::string& vec)  ;
-bool _getCont(std::istream& stream, std::string& cont) ;
+bool _getCont(std::istream& stream, std::string& cont, bool& is_str, bool& is_vec, bool& is_flt) ;
 bool _dumpJsn(std::istream& stream, std::stringstream& jsn) ;
-
 
 #endif
