@@ -122,12 +122,14 @@ std::ostream& operator<<(std::ostream& stream, json& node){
 }
 
 bool operator>>(std::istream& stream, json& node){
-   // json formatter input method 
+    /*
+    json formatter input method */
     char input ;
     
-    //check validity of json format
+    //first check of validity
     if (jin::getChar(stream, input, true) != '{')   throw std::logic_error("[0] invalid json format") ;
 
+// goto reference used to "recursively" parse the stream
 start_parsing_key:
     if (jin::getChar(stream, input, true) == stream.eof()){
         return true ;
@@ -154,7 +156,7 @@ start_parsing_key:
         stream.unget() ;
         // if it's not a subnode, it's a value (string, bool, number or vector)
         if (! _getCont(stream, val, is_str, is_vec, is_flt))    throw std::logic_error("[4] invalid json format") ;
-        // guess the type of the value 
+        // guess the type of the value (is there a smart way to do it?)
         if      (val == "true"  and ! is_str)   node[ (const char*) key.c_str()] = true  ;
         else if (val == "false" and ! is_str)   node[ (const char*) key.c_str()] = false ;
         else if (is_str)                        node[ (const char*) key.c_str()] = val   ;
@@ -219,12 +221,16 @@ start_parsing_key:
 
 // TODO: add eof check
 bool _getKey(std::istream& stream, std::string& key){
+    /* 
+    get the node key (ie the label) */
     char input ;
     if   (jin::getChar(stream, input) != '"') return false ;
     while(jin::getChar(stream, input) != '"') key += input ;
     return true ;
 }
 bool _getCont(std::istream& stream, std::string& cont, bool& is_str, bool& is_vec, bool& is_flt){
+    /*
+    get the node content (ie its value) */
     char input ;
     jin::getChar(stream, input) ;
     if (input == '"') {
@@ -240,6 +246,8 @@ bool _getCont(std::istream& stream, std::string& cont, bool& is_str, bool& is_ve
     return false ;
 }
 bool _getNum(std::istream& stream, std::string& num, bool& is_flt){
+    /*
+    if it's a number */
     stream.unget() ;
     char input ;
     while(jin::getChar(stream, input) != ',' and input != '}') {
@@ -250,11 +258,15 @@ bool _getNum(std::istream& stream, std::string& num, bool& is_flt){
     return true ;
 }
 bool _getStr(std::istream& stream, std::string& str){
+    /*
+    if it's a string */
     char input ;
     while(jin::getChar(stream, input) != '"') str += input ;
     return true ;
 }
 bool _getVec(std::istream& stream, std::string& vec){
+    /*
+    if it's a vector */
     char input ;
     vec += '[' ;
     while(jin::getChar(stream, input) != ']') vec += input ;
@@ -262,7 +274,10 @@ bool _getVec(std::istream& stream, std::string& vec){
     return true ;
 }
 bool _dumpJsn(std::istream& stream, std::stringstream& jsn){
+    /*
+    pull out a json subnode from a stream and dump it to a standalone temporary stream */
     char input ;
+    // use curly brackets to isolate the json subnode
     int  open_curly = 1 ;
     
     jsn << '{' ;
