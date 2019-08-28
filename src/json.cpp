@@ -91,6 +91,9 @@ float json::Float(){
 double json::Double(){
     return std::stod(_content.str()) ;
 }
+bool json::Bool(){
+    return _content.str() == "true" ? true : false ;
+}
 
 std::ostream& operator<<(std::ostream& stream, json& node){
     /*

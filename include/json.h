@@ -98,6 +98,7 @@ class json{
         int                     Int()    ;
         float                   Float()  ;
         double                  Double() ;
+        bool                    Bool()   ;
         json&   operator[](const char*  node_name) ;
         template <typename T>
         void    operator= (T content){
