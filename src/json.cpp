@@ -97,14 +97,14 @@ bool json::Bool(){
 
 std::ostream& operator<<(std::ostream& stream, json& node){
     /*
-    json formatter output method */
+    output formatter method */
     // print the overture char, be it a '{' (first child) or a ',' (not-first child)
     stream  << std::string(  node._is_first()                       , '{') 
             << std::string(! node._is_first() && bool(node._mother) , ',') 
             << std::endl ;
     // indent
     stream  << std::string(node._depth, '\t') ;
-    // print the couple (key : value)
+    // print the couple ("key" : value)
     stream  << labely(node._label)
             << node._content.str() ;
 
@@ -219,7 +219,6 @@ start_parsing_key:
     return true ;
 }
 
-// TODO: add eof check
 bool _getKey(std::istream& stream, std::string& key){
     /* 
     get the node key (ie the label) */
