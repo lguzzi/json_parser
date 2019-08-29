@@ -93,6 +93,14 @@ class json{
         json();
        ~json(); 
         
+        // TODO:
+        // add vector getters
+        // std::vector<bool>        bVec() ;
+        // std::vector<int>         iVec() ;
+        // std::vector<float>       fVec() ;
+        // std::vector<double>      dVec() ;
+        // std::vector<std::string> sVec() ;
+
         std::list<std::string>& keys();
         std::string             String() ;
         int                     Int()    ;
