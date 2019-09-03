@@ -17,7 +17,7 @@ namespace jopt{
     extern int PRECISION ;  // argument of std::setprecision
 }
 
-namespace jout{
+namespace jeq{
     /*
     namespace for assign operations*/
     template<typename S>

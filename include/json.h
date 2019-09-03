@@ -43,7 +43,7 @@ class json{
         void    operator= (T content){
             _content.str("") ;
             _content << std::boolalpha ;
-            jout::operator< (_content, content) ;
+            jeq::operator< (_content, content) ;
         }
 
         /*
@@ -58,7 +58,6 @@ class json{
         void _add_child (json* child);              // add subnode
         bool _is_last()  ;                          // about the node position in the mother's subnode vector
         bool _is_first() ;                          // about the node position in the mother's subnode vector
-        std::string _labely(std::string& label) ;   // add the correct json-label syntax to a string (foo -> "foo" :)
 
         std::vector<json*>      _subnodes   ;
         std::list<std::string>  _keys       ;
@@ -75,5 +74,6 @@ class json{
 other operators and functions */
 std::ostream& operator<<(std::ostream& stream, json& node) ;    // overload output to a string (convert the json tree to a correct json stream)
 bool          operator>>(std::istream& stream, json& node) ;    // input from a file
+std::string labely(std::string& label) ;                        // add the correct json-label syntax to a string (foo -> "foo" :)
 
 #endif

@@ -147,7 +147,7 @@ start_parsing_key:
     if (jin::getChar(stream, true) != ':')      throw std::logic_error("[2] invalid json format") ;
     // if the value is a json node
     if (jin::getChar(stream, true) == '{'){
-        if (!jin::dumpJsn(stream, jsn))             throw std::logic_error("[3] invalid json format") ;
+        if (!jin::dumpJsn(stream, jsn))         throw std::logic_error("[3] invalid json format") ;
         // recursivelly dump the json node read from the file into the json object
         jsn >> node[(const char*) key.c_str()] ;
     } else{
