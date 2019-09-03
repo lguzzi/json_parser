@@ -84,7 +84,7 @@ namespace jin{
     char getChar(S& stream, bool skip_spaces = false){
         char input ;
         input = stream.get() ;
-        while ( input == '\n' || input == '\t' || (!skip_spaces && input == ' ')){
+        while ( input == '\n' || input == '\t' || (skip_spaces && input == ' ')){
             input = stream.get() ;
         }
     
