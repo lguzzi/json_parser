@@ -19,7 +19,7 @@ namespace jopt{
 
 namespace jout{
     /*
-    namespace for operator overloading (output)*/
+    namespace for assign operations*/
     template<typename S>
     S& operator<(S& stream, const char* value){
         stream << '"' << value << '"' ;

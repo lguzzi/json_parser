@@ -161,10 +161,6 @@ start_parsing_key:
         else if (val == "false" and ! is_str)   node[ (const char*) key.c_str()] = false ;
         else if (is_str)                        node[ (const char*) key.c_str()] = val   ;
         else if (is_vec){
-            std::vector<int>    vint ;
-            std::vector<double> vdbl ;
-           
-            std::vector<bool>   vboo ;
             if (val[0] != '[')              throw std::logic_error("[5] invalid json format") ;
             if (val[val.size() - 1] != ']') throw std::logic_error("[6] invalid json format") ;
 
